@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Portal</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    /* === BACKGROUND ANIMATION === */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      color: #fff;
+      background-image: url(https://cdn.pixabay.com/photo/2024/08/15/19/19/highland-cow-8972000_1280.jpg);
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* Raining animation */
+    .rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: 
+        linear-gradient(transparent, rgba(216, 53, 53, 0.05) 2px, transparent 4px),
+        linear-gradient(transparent, rgba(255,255,255,0.05) 2px, transparent 4px);
+      background-size: 3px 100px;
+      animation: rainMove 0.8s linear infinite;
+      z-index: 0;
+    }
+    @keyframes rainMove {
+      from { background-position: 0 -100px, 50px -50px; }
+      to { background-position: 0 100px, 50px 50px; }
+    }
+
+    /* Gym silhouettes overlay */
+    .gym-bg {
+      background: url('https://www.shutterstock.com/image-vector/powerful-charging-bull-vector-illustration-600nw-2626988599.jpg') repeat-x bottom;
+      background-size: contain;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      opacity: 1;
+      z-index: 1;
+    }
+
+    /* === CONTAINER === */
+    .member-container {
+      width: 90%;
+      max-width: 1000px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      margin: 60px auto;
+      position: relative;
+      z-index: 2;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .member-container:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+    }
+
+    h1, h2 {
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    button {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #f87171, #dc2626);
+      transform: scale(1.08);
+      box-shadow: 0 8px 20px rgba(239,68,68,0.7);
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      margin: 20px 0;
+    }
+
+    /* === CARDS === */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .info-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 180deg, #3b82f6, #9333ea, #f43f5e, #3b82f6);
+      animation: rotate 6s linear infinite;
+      z-index: 0;
+      opacity: 0.2;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .info-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    }
+
+    .info-card h4 {
+      font-size: 1rem;
+      color: #dbeafe;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-card p {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #fff;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* === STATUS BADGES === */
+    .status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .status-active {
+      background: #22c55e;
+      color: #fff;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    .status-expired {
+      background: #ef4444;
+      color: #fff;
+      box-shadow: 0 0 10px #ef4444;
+    }
+
+    /* === TABLES === */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+
+    .data-table th, .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+    }
+
+    .data-table th {
+      background: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: #e0e7ff;
+    }
+
+    .data-table tr:nth-child(even) {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .data-table tr:hover {
+      background: rgba(255,255,255,0.2);
+      transform: scale(1.01);
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="rain"></div>
+  <div class="gym-bg"></div>
+
+  <div class="member-container">
+    <header>
+      <h1>Welcome, <span id="member-name-display">Member!</span></h1>
+      <button onclick="logoutMember()">Logout</button>
+    </header>
+
+    <hr>
+
+    <h2>Membership Status</h2>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>Membership Type</h4>
+        <p id="member-type">Loading...</p>
+      </div>
+      <div class="info-card">
+        <h4>Status</h4>
+        <p id="member-status">Loading...</p>
+      </div>
+      <div class="info-card">
+        <h4>Next Renewal Date</h4>
+        <p id="renewal-date">Loading...</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 40px;">My Personal Information</h2>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>Email</h4>
+        <p id="member-email-display">Loading...</p>
+      </div>
+      <div class="info-card">
+        <h4>Phone Number (Future Field)</h4>
+        <p id="member-phone">N/A</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 40px;">My Class Schedule</h2>
+    <table class="data-table" id="schedule-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Day</th>
+          <th>Time</th>
+          <th>Coach (ID)</th>
+        </tr>
+      </thead>
+      <tbody id="schedule-body">
+        <tr><td colspan="4">Loading schedule...</td></tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top: 40px;">Payment History</h2>
+    <table class="data-table" id="payment-history-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="payments-body">
+        <tr><td colspan="4">Loading payment history...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfcpKf3HiPQCGDqkGFGZs171jaTNZUnOA",
+      authDomain: "fitness-tracker-3314d.firebaseapp.com",
+      projectId: "fitness-tracker-3314d",
+      storageBucket: "fitness-tracker-3314d.firebasestorage.app",
+      messagingSenderId: "488401462875",
+      appId: "1:488401462875:web:9113c7387a479502ff017e"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = app.auth();
+    const db = app.firestore();
+
+    auth.onAuthStateChanged((user) => {
+      if (user) loadMemberData(user.email);
+      else window.location.href = 'login.html';
+    });
+
+    function logoutMember() {
+      auth.signOut().then(() => window.location.href = 'login.html');
+    }
+
+    async function loadMemberData(email) {
+      try {
+        const snap = await db.collection('members').where('email', '==', email).limit(1).get();
+        if (snap.empty) {
+          alert('No member record found!');
+          auth.signOut();
+          return;
+        }
+
+        const data = snap.docs[0].data();
+        document.getElementById('member-name-display').textContent = data.name || 'Member';
+        document.getElementById('member-email-display').textContent = email;
+
+        const today = new Date();
+        const expiryDate = new Date(data.expiry_date);
+        const statusEl = document.getElementById('member-status');
+        let statusText = expiryDate < today
+          ? `<span class="status-badge status-expired">Expired</span>`
+          : `<span class="status-badge status-active">Active</span>`;
+
+        document.getElementById('member-type').textContent = data.membership || 'Standard';
+        statusEl.innerHTML = statusText;
+        document.getElementById('renewal-date').textContent = data.expiry_date || 'N/A';
+      } catch (e) { console.error(e); }
+
+      // Load schedules & payments as before...
+    }
+  </script>
+</body>
+</html>

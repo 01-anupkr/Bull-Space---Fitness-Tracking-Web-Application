@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Management Sign Up</title>
+    <link rel="stylesheet" href="style.css"> 
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        /* Styles for centering the sign-up form */
+        body { background-color: #f3f4f6; font-family: sans-serif; }
+        .signup-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .signup-box { background-color: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 400px; }
+        .signup-box input, .signup-box button { margin: 10px 0; padding: 12px; width: 100%; border: 1px solid #ccc; border-radius: 4px; }
+        .signup-box button { background-color: var(--secondary-color, #10b981); color: white; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .signup-box button:hover { background-color: #059669; }
+        .signup-box a { color: var(--primary-color, #3b82f6); text-decoration: none; margin-top: 15px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="signup-container">
+        <div class="signup-box">
+            <h2>NEW MEMBER REGISTRATION</h2>
+            <input type="email" id="signup-email" placeholder="Email" required>
+            <input type="password" id="signup-password" placeholder="Password (min 6 characters)" required>
+            <button onclick="signUpUser()">Register Account</button>
+            <p id="auth-error" style="color: red; margin-top: 15px; font-size: 0.9rem;"></p>
+            <a href="login.html">Already have an account? Sign In</a>
+        </div>
+    </div>
+
+    <script>
+        // 1. Firebase Configuration (Must be correct)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfcpKf3HiPQCGDqkGFGZs171jaTNZUnOA",
+            authDomain: "fitness-tracker-3314d.firebaseapp.com",
+            projectId: "fitness-tracker-3314d",
+            storageBucket: "fitness-tracker-3314d.firebasestorage.app",
+            messagingSenderId: "488401462875",
+            appId: "1:488401462875:web:9113c7387a479502ff017e"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = app.auth();
+        const db = app.firestore(); 
+        
+        // Function to redirect based on role (Copied from login.html)
+        async function redirectToCorrectPanel(user) {
+            try {
+                const roleDoc = await db.collection('user_roles').doc(user.uid).get();
+                const role = roleDoc.exists ? roleDoc.data().role : 'member'; 
+
+                if (role === 'admin') {
+                    window.location.href = 'index.html'; 
+                } else { 
+                    window.location.href = 'member_panel.html';
+                }
+            } catch (error) {
+                console.error("Error checking user role:", error);
+                auth.signOut();
+            }
+        }
+
+        // 2. Sign Up Function
+        function signUpUser() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const errorDisplay = document.getElementById('auth-error');
+            errorDisplay.textContent = ''; 
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // 1. Assign the default 'member' role automatically
+                    return db.collection('user_roles').doc(user.uid).set({ 
+                        email: user.email,
+                        role: 'member' 
+                    });
+                })
+                .then(() => {
+                    // 2. SUCCESS: Auto-redirect will be handled by onAuthStateChanged
+                    alert('Account successfully created! Redirecting...');
+                })
+                .catch((error) => {
+                    errorDisplay.textContent = 'Sign Up failed: ' + error.message;
+                    console.error(error);
+                });
+        }
+        
+        // 3. Auto-Redirect Check
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                redirectToCorrectPanel(user);
+            }
+        });
+    </script>
+</body>
+</html>

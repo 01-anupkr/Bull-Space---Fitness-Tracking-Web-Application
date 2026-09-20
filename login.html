@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Admin Login | Big Bulls Gym</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script> 
+    
+    <style>
+        /* === Global Styles (Kept your custom styles) === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            /* NOTE: Ensure your path /assets/img/hero/h1_hero.png is correct */
+            background: url('/assets/img/hero/h1_hero.png') no-repeat center center/cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: brightness(0.5);
+        }
+
+        /* === Overlay === */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 15, 0.7);
+            z-index: -1;
+        }
+
+        /* === Logo === */
+        .logo {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .logo img {
+            width: 90px;
+            transition: transform 0.4s ease;
+        }
+
+        .logo img:hover {
+            transform: scale(1.1);
+        }
+
+        .logo h1 {
+            color: #ff2020;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-top: 8px;
+        }
+
+        /* === Login Box === */
+        .login-container {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 50px 40px;
+            width: 380px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+        }
+
+        .login-container h2 {
+            font-size: 1.8rem;
+            color: #ff4747;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 18px;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            transition: 0.3s;
+        }
+
+        .login-container input:focus {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid #ff4747;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background: #ff4747;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-container button:hover {
+            background: #ff0000;
+            transform: scale(1.05);
+        }
+
+        .login-container a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .login-container a:hover {
+            color: #ff4747;
+        }
+
+        #auth-error {
+            color: #ff9d9d;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+
+    <div class="logo">
+        <img src="/img/TT.png" alt="Big Bulls Gym Logo">
+        <h1>BIG BULLS GYM</h1>
+    </div>
+
+    <div class="login-container">
+        <h2>Admin / Member Login</h2>
+        <input type="email" id="login-email" placeholder="Enter Email" required>
+        <input type="password" id="login-password" placeholder="Enter Password" required>
+        <button onclick="loginUser()">Login</button>
+        <p id="auth-error"></p>
+        <a href="signup.html">Don’t have an account? Sign Up</a>
+    </div>
+
+    <script>
+        // === Firebase Config ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfcpKf3HiPQCGDqkGFGZs171jaTNZUnOA",
+            authDomain: "fitness-tracker-3314d.firebaseapp.com",
+            projectId: "fitness-tracker-3314d",
+            // Include other config fields if necessary
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        // ✅ Initialize Firestore
+        const db = firebase.firestore(); 
+
+        // === Central Role-Checking Function ===
+        async function redirectToCorrectPanel(user) {
+            try {
+                // Fetch the role document using the user's UID
+                const roleDoc = await db.collection('user_roles').doc(user.uid).get();
+                // Default to 'member' if no role is explicitly set
+                const role = roleDoc.exists ? roleDoc.data().role : 'member'; 
+
+                if (role === 'admin') {
+                    window.location.href = 'index.html'; // Staff/Admin Dashboard
+                } else { 
+                    window.location.href = 'member_panel.html'; // Member Portal
+                }
+            } catch (error) {
+                console.error("Error checking user role for redirection:", error);
+                document.getElementById('auth-error').textContent = "⚠️ Error reading role. Please try again.";
+                auth.signOut();
+            }
+        }
+        
+        // === Login Function (Updated to use role check) ===
+        function loginUser() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorDisplay = document.getElementById('auth-error');
+            errorDisplay.textContent = '';
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // SUCCESS: Pass the logged-in user to the role checker
+                    redirectToCorrectPanel(userCredential.user);
+                })
+                .catch((error) => {
+                    errorDisplay.textContent = "⚠️ " + error.message;
+                });
+        }
+
+        // Auto-redirect if logged in (Updated to use role check)
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                 // If user object exists, check their role immediately
+                redirectToCorrectPanel(user);
+            }
+        });
+    </script>
+</body>
+</html>

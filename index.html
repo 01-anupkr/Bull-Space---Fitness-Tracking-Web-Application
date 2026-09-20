@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Management Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // ⚠️ CRITICAL: Configuration must be repeated here for the redirect check
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDfcpKf3HiPQCGDqkGFGZs171jaTNZUnOA",
+            authDomain: "fitness-tracker-3314d.firebaseapp.com",
+            projectId: "fitness-tracker-3314d",
+            storageBucket: "fitness-tracker-3314d.firebasestorage.app",
+            messagingSenderId: "488401462875",
+            appId: "1:488401462875:web:9113c7387a479502ff017e"
+        };
+        
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = app.auth();
+
+        // Check auth status immediately on page load
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                // User is NOT logged in, redirect to login page
+                window.location.href = 'login.html';
+            }
+            // If user is logged in, the page continues loading script.js
+        });
+
+        // Function to allow manual log out from the sidebar
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">GYM ADMIN</div>
+            <nav>
+                <button class="nav-item active" data-page="home">🏠 Dashboard</button>
+                <button class="nav-item" data-page="members">👥 Members</button>
+                <button class="nav-item" data-page="coaches">🏋️ Coaches</button>
+                <button class="nav-item" data-page="receptionists">👩‍💼 Reception</button>
+                <button class="nav-item" onclick="logoutUser()">🚪 Logout</button> </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h2>Welcome to Your Gym Portal</h2>
+            </header>
+
+            <div id="content-area" class="content-wrapper">
+                
+                <div id="home" class="page active-page">
+                    <h3>📊 Key Metrics</h3>
+                    <div class="metric-grid">
+                        <div class="metric-card member-card">
+                            <h4>Total Members</h4>
+                            <p id="total-members-count">0</p>
+                        </div>
+                        <div class="metric-card coach-card">
+                            <h4>Active Coaches</h4>
+                            <p id="active-coaches-count">0</p>
+                        </div>
+                        <div class="metric-card receptionist-card">
+                            <h4>Receptionists</h4>
+                            <p id="receptionists-count">0</p>
+                        </div>
+                         <div class="metric-card revenue-card">
+                            <h4>Pending Payments</h4>
+                            <p id="pending-payments-count">$0</p>
+                        </div>
+                    </div>
+
+                    <div class="data-section">
+                        <h4>Recent Members</h4>
+                        <table class="data-table" id="recent-members-table">
+                            <thead><tr><th>Name</th><th>Membership</th><th>Status</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="members" class="page">
+                    <h3>👥 Member Management</h3>
+                    <button class="add-button" onclick="document.getElementById('add-member-form').style.display='block'">+ Add New Member</button>
+                    <div id="add-member-form" class="form-container" style="display: none;">
+                        <input type="text" id="member-name" placeholder="Full Name">
+                        <input type="email" id="member-email" placeholder="Email">
+                        <input type="text" id="member-membership" placeholder="Membership Type">
+                        <button onclick="addDocument('members')">Save Member</button>
+                    </div>
+
+                    <table class="data-table full-table" id="member-full-table">
+                        <thead><tr><th>Name</th><th>Email</th><th>Type</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div id="coaches" class="page">
+                    <h3>🏋️ Coach Management</h3>
+                    <button class="add-button" onclick="document.getElementById('add-coach-form').style.display='block'">+ Add New Coach</button>
+                    <div id="add-coach-form" class="form-container" style="display: none;">
+                        <input type="text" id="coach-name" placeholder="Full Name">
+                        <input type="text" id="coach-specialization" placeholder="Specialization (e.g., Yoga, Weights)">
+                        <input type="email" id="coach-email" placeholder="Email">
+                        <button onclick="addDocument('coaches')">Save Coach</button>
+                    </div>
+
+                    <table class="data-table full-table" id="coaches-full-table">
+                        <thead><tr><th>Name</th><th>Specialization</th><th>Email</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div id="receptionists" class="page">
+                    <h3>👩‍💼 Receptionist Management</h3>
+                    <button class="add-button" onclick="document.getElementById('add-receptionist-form').style.display='block'">+ Add New Receptionist</button>
+                    <div id="add-receptionist-form" class="form-container" style="display: none;">
+                        <input type="text" id="receptionist-name" placeholder="Full Name">
+                        <input type="text" id="receptionist-shift" placeholder="Shift (e.g., Morning, Evening)">
+                        <input type="email" id="receptionist-email" placeholder="Email">
+                        <button onclick="addDocument('receptionists')">Save Receptionist</button>
+                    </div>
+
+                    <table class="data-table full-table" id="receptionists-full-table">
+                        <thead><tr><th>Name</th><th>Shift</th><th>Email</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

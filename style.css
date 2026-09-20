@@ -1,0 +1,244 @@
+/* Basic Reset and Variables */
+:root {
+    --primary-color: #3b82f6; /* Blue */
+    --secondary-color: #10b981; /* Green */
+    --background-color: #f3f4f6;
+    --card-background: #ffffff;
+    --text-color: #0909ff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background-image: url("/assets/img/hero/h1_hero.png");
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* --- Dashboard Layout --- */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    backdrop-filter: blur(4px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background-color: rgba(31, 41, 55, 0.95); /* Slight transparency */
+    color: #fff;
+    padding: 30px 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo img {
+    width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.logo span {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    letter-spacing: 1px;
+}
+
+.nav-item {
+    display: block;
+    width: 100%;
+    padding: 18px 25px;
+    margin-bottom: 8px;
+    background: none;
+    border: none;
+    color: #ccc;
+    text-align: left;
+    cursor: pointer;
+    font-size: 1.15rem;
+    transition: background-color 0.25s, color 0.25s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+    flex-grow: 1;
+    padding: 40px;
+}
+
+header {
+    margin-bottom: 35px;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 15px;
+}
+
+header h2 {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+/* --- Metric Cards --- */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+.metric-card {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    border-left: 6px solid var(--primary-color);
+    transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+
+.metric-card h4 {
+    font-size: 1.25rem;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+.metric-card p {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* --- Data Tables --- */
+.data-section {
+    background-color: var(--card-background);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 1rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.data-table th {
+    background-color: var(--background-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--primary-color);
+}
+
+.status-active {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.status-pending {
+    color: orange;
+    font-weight: bold;
+}
+
+/* --- Forms and Buttons --- */
+.add-button {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.25s ease;
+}
+
+.add-button:hover {
+    background-color: #2563eb;
+    transform: translateY(-2px);
+}
+
+.form-container {
+    background-color: var(--background-color);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.form-container input {
+    padding: 12px;
+    margin-right: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 230px;
+    font-size: 1rem;
+}
+
+/* --- Responsiveness --- */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .logo {
+        display: none;
+    }
+
+    .main-content {
+        padding: 25px;
+    }
+
+    .metric-card p {
+        font-size: 2rem;
+    }
+
+    .nav-item {
+        font-size: 0.95rem;
+        padding: 10px;
+    }
+}
+
+/* Page Toggling */
+.page {
+    display: none;
+}
+
+.active-page {
+    display: block;
+}
