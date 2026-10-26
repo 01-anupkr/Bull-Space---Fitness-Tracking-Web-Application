@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Member Portal</title>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -13,14 +14,23 @@
   <style>
     /* === BACKGROUND ANIMATION === */
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
       padding: 0;
       overflow-x: hidden;
       color: #fff;
-      background-image: url(https://cdn.pixabay.com/photo/2024/08/15/19/19/highland-cow-8972000_1280.jpg);
+      background: linear-gradient(135deg, #0f172a 0%, #172554 55%, #1e293b 100%);
       position: relative;
       min-height: 100vh;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     /* Raining animation */
@@ -31,11 +41,8 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      background-image: 
-        linear-gradient(transparent, rgba(216, 53, 53, 0.05) 2px, transparent 4px),
-        linear-gradient(transparent, rgba(255,255,255,0.05) 2px, transparent 4px);
-      background-size: 3px 100px;
-      animation: rainMove 0.8s linear infinite;
+      background-image: radial-gradient(circle at 20% 20%, rgba(244, 63, 94, .18), transparent 28%), radial-gradient(circle at 80% 10%, rgba(59, 130, 246, .16), transparent 30%);
+      animation: none;
       z-index: 0;
     }
     @keyframes rainMove {
@@ -44,36 +51,21 @@
     }
 
     /* Gym silhouettes overlay */
-    .gym-bg {
-      background: url('https://www.shutterstock.com/image-vector/powerful-charging-bull-vector-illustration-600nw-2626988599.jpg') repeat-x bottom;
-      background-size: contain;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 50%;
-      opacity: 1;
-      z-index: 1;
-    }
+    .gym-bg { display: none; }
 
     /* === CONTAINER === */
     .member-container {
-      width: 90%;
-      max-width: 1000px;
-      background: rgba(255, 255, 255, 0.1);
+      width: min(1120px, calc(100% - 32px));
+      max-width: 1120px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(255,255,255,.14);
       backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      margin: 60px auto;
+      border-radius: 24px;
+      padding: clamp(22px, 4vw, 46px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin: 32px auto;
       position: relative;
       z-index: 2;
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
-
-    .member-container:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
     }
 
     header {
@@ -81,12 +73,17 @@
       justify-content: space-between;
       align-items: center;
       color: #fff;
+      gap: 20px;
+      flex-wrap: wrap;
     }
 
     h1, h2 {
       color: #fff;
       text-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
+
+    h1 { font-size: clamp(1.5rem, 3vw, 2.2rem); }
+    h2 { font-size: 1.3rem; margin-bottom: 12px; }
 
     button {
       background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -97,7 +94,7 @@
       cursor: pointer;
       font-weight: bold;
       box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-      transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     button:hover {
@@ -121,13 +118,14 @@
     }
 
     .info-card {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,.12);
       padding: 20px;
       border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
       position: relative;
       overflow: hidden;
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .info-card::before {
@@ -138,9 +136,9 @@
       width: 200%;
       height: 200%;
       background: conic-gradient(from 180deg, #3b82f6, #9333ea, #f43f5e, #3b82f6);
-      animation: rotate 6s linear infinite;
+      animation: none;
       z-index: 0;
-      opacity: 0.2;
+      opacity: 0.08;
     }
 
     @keyframes rotate {
@@ -197,7 +195,7 @@
       margin-top: 20px;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
     }
 
     .data-table th, .data-table td {
@@ -221,6 +219,57 @@
       background: rgba(255,255,255,0.2);
       transform: scale(1.01);
       transition: all 0.3s ease;
+    }
+
+    .wellness-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .wellness-card {
+      background: rgba(15, 23, 42, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 15px;
+      padding: 22px;
+    }
+
+    .wellness-card h3 {
+      margin: 0 0 12px;
+      color: #bfdbfe;
+    }
+
+    .wellness-card p {
+      margin: 8px 0;
+      color: #e2e8f0;
+    }
+
+    .wellness-card select {
+      width: 100%;
+      padding: 10px;
+      border: 0;
+      border-radius: 8px;
+      color: #172033;
+      background: #f8fafc;
+    }
+
+    .weather-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .weather-meta {
+      display: grid;
+      gap: 6px;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+
+    .muted {
+      color: #cbd5e1 !important;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -257,6 +306,26 @@
       <div class="info-card">
         <h4>Email</h4>
         <p id="member-email-display">Loading...</p>
+      </div>
+
+      <h2 style="margin-top: 40px;">Wellness Hub</h2>
+      <div class="wellness-grid">
+        <section class="wellness-card" aria-labelledby="diet-heading">
+          <h3 id="diet-heading">🥗 Diet plan</h3>
+          <label for="diet-goal">Choose your goal</label>
+          <select id="diet-goal">
+            <option value="maintenance">Balanced maintenance</option>
+            <option value="muscle">Muscle gain</option>
+            <option value="loss">Fat loss</option>
+          </select>
+          <p id="diet-plan">Loading plan...</p>
+          <p class="muted">General guidance only. Consult a qualified nutrition professional for a personalised plan.</p>
+        </section>
+        <section class="wellness-card" aria-labelledby="weather-heading">
+          <h3 id="weather-heading">☀️ Current weather</h3>
+          <div id="weather-status" class="weather-value">Loading...</div>
+          <div id="weather-meta" class="weather-meta"></div>
+        </section>
       </div>
       <div class="info-card">
         <h4>Phone Number (Future Field)</h4>
@@ -317,6 +386,66 @@
     function logoutMember() {
       auth.signOut().then(() => window.location.href = 'login.html');
     }
+
+    const dietPlans = {
+      maintenance: 'Build meals around vegetables, whole grains, lean protein, fruit and water. Aim for consistent portions across the day.',
+      muscle: 'Include a protein source at every meal, complex carbohydrates around training and calorie-dense snacks such as yoghurt, nuts or fruit.',
+      loss: 'Prioritise vegetables, lean protein and high-fibre carbohydrates. Use smaller portions and choose water or unsweetened drinks.'
+    };
+
+    function updateDietPlan() {
+      const goal = document.getElementById('diet-goal').value;
+      document.getElementById('diet-plan').textContent = dietPlans[goal];
+    }
+
+    function weatherDescription(code) {
+      const descriptions = {
+        0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+        45: 'Foggy', 48: 'Rime fog', 51: 'Light drizzle', 53: 'Drizzle',
+        55: 'Heavy drizzle', 61: 'Light rain', 63: 'Rain', 65: 'Heavy rain',
+        71: 'Light snow', 73: 'Snow', 75: 'Heavy snow', 80: 'Rain showers',
+        81: 'Rain showers', 82: 'Heavy showers', 95: 'Thunderstorm'
+      };
+      return descriptions[code] || 'Conditions unavailable';
+    }
+
+    async function loadWeather(latitude = 28.4744, longitude = 77.504) {
+      const status = document.getElementById('weather-status');
+      const meta = document.getElementById('weather-meta');
+      try {
+        const response = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`
+        );
+        if (!response.ok) throw new Error(`Weather request failed: ${response.status}`);
+        const data = await response.json();
+        const current = data.current;
+        status.textContent = `${Math.round(current.temperature_2m)}°C`;
+        meta.innerHTML = `
+          <span>${weatherDescription(current.weather_code)}</span>
+          <span>Feels like ${Math.round(current.apparent_temperature)}°C · Humidity ${current.relative_humidity_2m}%</span>
+          <span>Wind ${Math.round(current.wind_speed_10m)} km/h</span>
+        `;
+      } catch (error) {
+        console.error('Unable to load weather:', error);
+        status.textContent = 'Unavailable';
+        meta.textContent = 'Please check your connection and try again later.';
+      }
+    }
+
+    function loadLocalWeather() {
+      if (!navigator.geolocation) {
+        loadWeather();
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => loadWeather(coords.latitude, coords.longitude),
+        () => loadWeather()
+      );
+    }
+
+    document.getElementById('diet-goal').addEventListener('change', updateDietPlan);
+    updateDietPlan();
+    loadLocalWeather();
 
     async function loadMemberData(email) {
       try {
