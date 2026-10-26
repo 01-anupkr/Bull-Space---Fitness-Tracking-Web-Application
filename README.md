@@ -1,582 +1,262 @@
-# Bull-Space---Fitness-Tracking-Web-Application
-🏋️ Fitness Tracker & Gym Management System
+# Bull Gym
+
+Bull Gym is a static fitness website with a Firebase-backed gym management
+portal. It provides public pages for the gym brand, Firebase authentication,
+an admin dashboard, and a member portal with wellness features.
+
+## Features
+
+- Public gym website:
+  - Home, About, Courses, Pricing, Gallery, Blog, and Contact pages
+  - Responsive navigation and mobile layout
+  - Local CSS, JavaScript, image, and font assets
+- Authentication:
+  - Firebase email/password sign-up and sign-in
+  - Automatic role-based routing
+  - Logout and authentication-state checks
+- Admin dashboard:
+  - Member, coach, and receptionist management
+  - Dashboard metrics and recent members
+  - Firestore add and delete operations
+- Member portal:
+  - Membership and renewal information
+  - Class schedule and payment history sections
+  - Diet-plan selector for maintenance, muscle gain, and fat loss
+  - Current weather from the keyless Open-Meteo API
+- Performance and accessibility:
+  - Lazy-loaded public-page images
+  - Responsive layouts
+  - Reduced-motion support
+  - No build step or npm dependency required
+
+## Requirements
+
+- A modern browser
+- Python 3 (recommended) or another local static HTTP server
+- A Firebase project with:
+  - Email/password Authentication enabled
+  - Cloud Firestore enabled
+  - Firestore rules configured for your deployment
+
+The site must be served over HTTP rather than opened directly with
+`file://`. This avoids browser restrictions around Firebase and other
+network requests.
+
+## Initialize the project
+
+Clone the repository and enter its directory:
+
+```bash
+git clone https://github.com/01-anupkr/Bull-Space---Fitness-Tracking-Web-Application.git
+cd Bull-Space---Fitness-Tracking-Web-Application
+```
 
-A responsive Fitness Tracker / Gym Management System built with HTML, CSS and JavaScript, with Firebase Authentication and Cloud Firestore for user authentication and gym-management data.
+No package installation is required. The repository already contains the
+frontend libraries and static assets under `assets/` and `img/`.
+
+## Start locally
+
+Using Python's built-in server:
+
+```bash
+python3 -m http.server 8000
+```
+
+Open the public website:
+
+```text
+http://localhost:8000/index1.html
+```
+
+Useful routes:
+
+| Route | Purpose |
+| --- | --- |
+| `/index1.html` | Public gym homepage |
+| `/about.html` | About page |
+| `/courses.html` | Training programs |
+| `/pricing.html` | Membership pricing |
+| `/gallery.html` | Gym gallery |
+| `/blog.html` | Blog listing |
+| `/contact.html` | Contact page |
+| `/login.html` | Firebase login |
+| `/signup.html` | Create a member account |
+| `/index.html` | Authenticated admin dashboard |
+| `/member_panel.html` | Authenticated member portal |
+
+Stop the server with `Ctrl+C`.
+
+## Firebase initialization
+
+Firebase configuration is currently declared in the authentication pages and
+the admin/member pages:
+
+- `login.html`
+- `signup.html`
+- `index.html`
+- `member_panel.html`
+
+For a new Firebase project, replace the `firebaseConfig` values in those
+files with the web app configuration from Firebase Console. Keep the
+configuration consistent across all four pages.
 
-The project contains two major parts:
+Firebase web configuration values identify a project but do not replace
+Firestore security rules. Do not put administrator passwords, service-account
+keys, or other private credentials in HTML or JavaScript.
 
-Public Fitness Website – home page, about, courses, pricing, gallery, blog and contact pages.
+### Enable Authentication
 
-Authenticated Management Portal – login/sign-up, role-based routing, admin/staff dashboard and member portal.
+1. Open Firebase Console for the project.
+2. Go to **Authentication → Sign-in method**.
+3. Enable **Email/Password**.
+4. Create an administrator account and any test member accounts.
 
-Note: The repository should include the assets/ and img/ directories referenced by the HTML pages. The uploaded source files contain references to these folders, but those asset directories were not included in the supplied files.
+### Configure administrator access
 
-✨ Features
+New sign-ups are assigned the `member` role automatically. To grant admin
+access, create a Firestore document in `user_roles`:
+
+- **Document ID:** the Firebase Authentication user's UID
+- **Fields:**
+
+```json
+{
+  "email": "admin@example.com",
+  "role": "admin"
+}
+```
+
+Only assign the `admin` role to trusted accounts. In production, enforce
+authorization with Firestore Security Rules and, where appropriate, custom
+claims rather than relying only on client-side routing.
+
+## Firestore collections
+
+The current frontend expects these collections:
+
+### `user_roles`
+
+```json
+{
+  "email": "member@example.com",
+  "role": "member"
+}
+```
 
-🌐 Public Website
+Valid roles used by the client are `member` and `admin`.
 
-Fitness/gym landing page
+### `members`
 
-About section
+Typical fields:
 
-Courses and training information
+```json
+{
+  "name": "Example Member",
+  "email": "member@example.com",
+  "membership": "Annual",
+  "status": "Active",
+  "expiry_date": "2027-10-26",
+  "created_at": "Firestore server timestamp"
+}
+```
 
-Pricing plans
+### `coaches`
 
-Gallery
+Typical fields:
 
-Blog listing
+```json
+{
+  "name": "Example Coach",
+  "specialization": "Strength Training",
+  "email": "coach@example.com",
+  "status": "Active",
+  "created_at": "Firestore server timestamp"
+}
+```
 
-Blog details
+### `receptionists`
 
-Contact page
+Typical fields:
 
-Responsive navigation
+```json
+{
+  "name": "Example Receptionist",
+  "shift": "Morning",
+  "email": "reception@example.com",
+  "status": "Active",
+  "created_at": "Firestore server timestamp"
+}
+```
 
-Mobile navigation support
+The member portal also reads schedule and payment data when those sections
+are populated in the project database.
 
-Preloader and UI animations
+## Weather feature
 
-Bootstrap-based responsive components
+The member portal uses Open-Meteo:
 
-The public pages share a common navigation structure linking Home, About, Courses, Pricing, Gallery, Blog and Contact pages.
+```text
+https://api.open-meteo.com
+```
 
-🔐 Authentication
+No API key is required. The browser requests the member's location when
+permission is granted and falls back to the gym's configured default
+coordinates when permission is denied.
 
-Firebase Authentication is used for:
+## Project structure
 
-User registration
+```text
+.
+├── index1.html              # Public homepage
+├── about.html               # Public pages
+├── courses.html
+├── pricing.html
+├── gallery.html
+├── blog.html
+├── blog_details.html
+├── contact.html
+├── elements.html
+├── login.html               # Firebase login
+├── signup.html              # Firebase registration
+├── index.html               # Admin dashboard
+├── member_panel.html        # Member portal
+├── style.css                # Admin/dashboard styles
+├── script.js                # Admin navigation and Firestore operations
+├── assets/                  # Public CSS, JavaScript, fonts, and images
+└── img/                     # Project-level images and logo
+```
 
-User login
+## Troubleshooting
 
-Authentication-state checking
+### The page is blank or assets do not load
 
-Logout
+Start a local HTTP server and use `http://localhost:8000/...`; do not open
+the HTML file directly from Finder.
 
-Role-based redirection
+### Login fails
 
-The application checks the user_roles Firestore collection and routes users according to their role.
+Check that Email/Password authentication is enabled, the Firebase config
+matches the project, and the browser console does not show a Firebase error.
 
-👨‍💼 Admin / Staff Dashboard
+### A member is redirected to the member portal
 
-The management dashboard provides:
+This is expected unless that Firebase user's UID has a `user_roles` document
+whose `role` is exactly `admin`.
 
-Dashboard metrics
+### Firestore permission errors appear
 
-Total members
+Review the Firestore Security Rules and make sure they allow the intended
+authenticated reads and writes. Do not solve permission errors by publishing
+unrestricted database rules.
 
-Active coaches
+## Security notes
 
-Receptionist count
+- Never commit passwords or service-account credentials.
+- Reset credentials that have been exposed.
+- Restrict Firestore reads and writes with Security Rules.
+- Treat client-side role routing as a UI convenience, not a security boundary.
+- Use HTTPS when deploying outside local development.
 
-Pending payments
+## License
 
-Recent members
-
-Members management
-
-Coaches management
-
-Receptionists management
-
-Add/update/delete Firestore records
-
-Logout
-
-👤 Member Portal
-
-Authenticated members can access a dedicated member portal and view member-specific information stored in Firestore.
-
-🧰 Tech Stack
-
-Technology
-
-Purpose
-
-HTML5
-
-Page structure
-
-CSS3
-
-Styling and responsive UI
-
-JavaScript
-
-Client-side functionality
-
-Bootstrap
-
-Responsive UI components
-
-Firebase Authentication
-
-User authentication
-
-Firebase Firestore
-
-Cloud database
-
-Font Awesome
-
-Icons
-
-Themify Icons
-
-Icons
-
-Owl Carousel
-
-Sliders/carousels
-
-Slick / SlickNav
-
-UI sliders and responsive navigation
-
-Magnific Popup
-
-Popup/media functionality
-
-Google Fonts
-
-Typography
-
-The source pages load several frontend libraries through local assets/css files and external Firebase/CDN resources.
-
-📁 Project Structure
-
-fitness-tracker/
-│
-├── README.md
-│
-├── index1.html                 # Public website / main landing page
-├── about.html                  # About page
-├── courses.html                # Courses / training page
-├── pricing.html                # Pricing plans
-├── gallery.html                # Fitness gallery
-├── blog.html                   # Blog listing
-├── blog_details.html           # Individual blog details
-├── contact.html                # Contact page
-├── elements.html               # UI/design elements page
-│
-├── login.html                  # Firebase login page
-├── signup.html                 # Firebase registration page
-├── index.html                  # Authenticated admin/staff dashboard
-├── member_panel.html           # Authenticated member portal
-│
-├── style.css                   # Dashboard/global custom styles
-├── script.js                   # Dashboard navigation + Firestore operations
-│
-├── assets/
-│   ├── css/
-│   │   ├── bootstrap.min.css
-│   │   ├── owl.carousel.min.css
-│   │   ├── slicknav.css
-│   │   ├── flaticon.css
-│   │   ├── gijgo.css
-│   │   ├── animate.min.css
-│   │   ├── animated-headline.css
-│   │   ├── magnific-popup.css
-│   │   ├── fontawesome-all.min.css
-│   │   ├── themify-icons.css
-│   │   ├── slick.css
-│   │   ├── nice-select.css
-│   │   ├── style.css
-│   │   └── responsive.css
-│   │
-│   ├── js/
-│   │   └── ...                  # Frontend plugin JavaScript files
-│   │
-│   └── img/
-│       ├── hero/
-│       ├── gallery/
-│       ├── logo/
-│       └── ...                  # Project images
-│
-├── img/
-│   └── TT.png                   # Project logo referenced by pages
-│
-└── docs/
-    └── screenshots/
-        ├── home.png
-        ├── about.png
-        ├── courses.png
-        ├── pricing.png
-        ├── gallery.png
-        ├── blog.png
-        ├── contact.png
-        ├── login.png
-        ├── signup.png
-        ├── admin-dashboard.png
-        └── member-portal.png
-
-🗺️ Application Flow
-
-                         ┌─────────────────────┐
-                         │  Public Website     │
-                         │    index1.html      │
-                         └──────────┬──────────┘
-                                    │
-                  ┌─────────────────┼─────────────────┐
-                  │                 │                 │
-                  ▼                 ▼                 ▼
-              Courses           Pricing            Gallery
-                  │
-                  └─────────────────┬─────────────────┘
-                                    │
-                                    ▼
-                              Login / Sign Up
-                              login.html
-                              signup.html
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ Firebase Auth        │
-                         │ + user_roles         │
-                         └──────────┬───────────┘
-                                    │
-                    ┌───────────────┴───────────────┐
-                    │                               │
-              role = admin                     role = member
-                    │                               │
-                    ▼                               ▼
-          ┌───────────────────┐           ┌──────────────────┐
-          │ Admin Dashboard   │           │ Member Portal    │
-          │   index.html      │           │ member_panel.html│
-          └─────────┬─────────┘           └──────────────────┘
-                    │
-       ┌────────────┼───────────────┐
-       ▼            ▼               ▼
-    Members      Coaches       Receptionists
-       │            │               │
-       └────────────┼───────────────┘
-                    ▼
-              Cloud Firestore
-
-🔥 Firebase Architecture
-
-The project uses Firebase Authentication and Cloud Firestore.
-
-Authentication
-
-User
- │
- ├── Sign Up
- │      ↓
- │   Firebase Authentication
- │      ↓
- │   user_roles/{uid}
- │
- └── Login
-        ↓
-   Check authenticated user
-        ↓
-   Read role from Firestore
-        │
-        ├── admin → index.html
-        │
-        └── member → member_panel.html
-
-Firestore Collections
-
-The dashboard JavaScript works with the following collections:
-
-Firestore
-│
-├── user_roles
-│   └── {uid}
-│       └── role
-│
-├── members
-│   ├── name
-│   ├── email
-│   ├── membership
-│   ├── status
-│   └── created_at
-│
-├── coaches
-│   └── coach records
-│
-└── receptionists
-    └── receptionist records
-
-The dashboard reads member, coach and receptionist collections to populate metrics and tables.
-
-🔐 Role-Based Access
-
-The login and registration pages check the user's role from the user_roles Firestore collection.
-
-                    Login
-                      │
-                      ▼
-              Firebase Auth
-                      │
-                      ▼
-             Read user_roles
-                      │
-             ┌────────┴────────┐
-             │                 │
-           admin             member
-             │                 │
-             ▼                 ▼
-       index.html       member_panel.html
-
-📊 Admin Dashboard
-
-The admin dashboard contains four main navigation areas:
-
-Dashboard
-│
-├── 🏠 Dashboard
-│   ├── Total Members
-│   ├── Active Coaches
-│   ├── Receptionists
-│   └── Pending Payments
-│
-├── 👥 Members
-│
-├── 🏋️ Coaches
-│
-└── 👩‍💼 Reception
-
-Dashboard data is retrieved from Firestore using script.js.
-
-
-
-🚀 Getting Started
-
-1. Clone the repository
-
-git clone https://github.com/<your-username>/<your-repository>.git
-cd <your-repository>
-
-2. Verify project assets
-
-Make sure the following directories exist:
-
-assets/
-img/
-
-The HTML pages reference files such as:
-
-assets/css/style.css
-assets/css/bootstrap.min.css
-assets/img/favicon.ico
-img/TT.png
-
-3. Configure Firebase
-
-Create/configure a Firebase project with:
-
-Firebase Authentication
-
-Email/Password authentication
-
-Cloud Firestore
-
-Configure Firestore collections:
-
-user_roles
-members
-coaches
-receptionists
-
-4. Run the project
-
-Because Firebase and browser security rules may behave differently with file://, use a local web server.
-
-Option 1 — VS Code Live Server
-
-Install the Live Server extension and open:
-
-index1.html
-
-Then click Go Live.
-
-Option 2 — Python
-
-python3 -m http.server 5500
-
-Open:
-
-http://localhost:5500/index1.html
-
-🔑 Firebase Configuration
-
-The supplied source currently contains Firebase web configuration directly in the HTML files.
-
-For a production repository, prefer environment/configuration management appropriate to your deployment and make sure Firestore Security Rules and Authentication settings prevent unauthorized access.
-
-Do not commit:
-
-Service-account private keys
-
-Firebase Admin SDK credentials
-
-Server-side secrets
-
-Database passwords
-
-API tokens that are actually secret
-
-A Firebase web API key by itself is not a database authorization mechanism; access should be protected by Firebase Authentication and Firestore Security Rules.
-
-🧪 Testing Checklist
-
-Before publishing the repository, test:
-
-[ ] Home page loads
-[ ] Navigation links work
-[ ] About page works
-[ ] Courses page works
-[ ] Pricing page works
-[ ] Gallery works
-[ ] Blog works
-[ ] Blog details works
-[ ] Contact page works
-[ ] Sign-up works
-[ ] Login works
-[ ] Invalid login shows an error
-[ ] Admin role redirects to dashboard
-[ ] Member role redirects to member portal
-[ ] Logout works
-[ ] Members load from Firestore
-[ ] Coaches load from Firestore
-[ ] Receptionists load from Firestore
-[ ] Dashboard metrics load correctly
-[ ] Add record works
-[ ] Update record works
-[ ] Delete record works
-[ ] Mobile layout works
-
-📱 Responsive Design
-
-The public website uses responsive navigation and frontend libraries for desktop/mobile layouts.
-
-The pages include responsive navigation elements and Bootstrap-based components. The dashboard also uses a responsive grid for metric cards.
-
-🛠️ Main Source Files
-
-index1.html
-
-Public-facing Fitness Tracker home page and main navigation entry point.
-
-index.html
-
-Authenticated Gym Management Dashboard.
-
-login.html
-
-Firebase Authentication login page and role-based routing.
-
-signup.html
-
-New member/user registration page.
-
-member_panel.html
-
-Authenticated member portal.
-
-script.js
-
-Dashboard navigation and Firestore CRUD/data-loading logic.
-
-style.css
-
-Custom dashboard styling, layout, navigation, metric cards and tables.
-
-📌 Important Implementation Notes
-
-Some supplied HTML pages contain references to backend PHP endpoints such as:
-
-admin-login.php
-admin-index.php
-
-Those PHP files were not included in the supplied source set. If those links are no longer part of the application, they should be removed or replaced with the Firebase-based authentication flow.
-
-The current Firebase-based authentication flow uses:
-
-login.html
-signup.html
-index.html
-member_panel.html
-
-Also verify all referenced pages/assets before deployment because the supplied HTML contains references to shared assets/, img/, and other frontend resources.
-
-🌍 Deployment
-
-This project can be deployed as a static frontend using services such as:
-
-GitHub Pages
-
-Netlify
-
-Vercel
-
-Firebase Hosting
-
-For Firebase-backed functionality, configure the deployed domain in Firebase Authentication's authorized domains and configure Firestore Security Rules appropriately.
-
-📈 Future Improvements
-
-Possible improvements include:
-
-Member attendance tracking
-
-Workout-plan management
-
-Trainer assignment
-
-Subscription renewal reminders
-
-Online payment integration
-
-Membership expiry notifications
-
-BMI/fitness calculator
-
-Progress tracking
-
-Admin analytics and charts
-
-Profile management
-
-Password reset
-
-Firestore Security Rules refinement
-
-Better form validation
-
-Backend/API layer for sensitive operations
-
-Automated deployment using GitHub Actions
-
-👨‍💻 Author
-
-Anup Kumar
-
-B.Tech – Computer Science (IoT)
-
-📄 License
-
-This project can be distributed and modified according to the license selected for the repository.
-
-If no license has been selected yet, add an appropriate LICENSE file before treating the project as an open-source project.
-
-⭐ Project Summary
-
-Fitness Tracker & Gym Management System is a web-based gym management application combining a responsive fitness website with Firebase-powered authentication, role-based access and a Firestore-backed administration dashboard.
-
-Frontend
-   ↓
-HTML + CSS + JavaScript
-   ↓
-Firebase Authentication
-   ↓
-Role-Based Routing
-   ↓
-Admin Dashboard / Member Portal
-   ↓
-Cloud Firestore
-
-If you find the project useful, consider giving the repository a ⭐.
+See [LICENSE](./LICENSE).
